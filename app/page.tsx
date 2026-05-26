@@ -1,66 +1,59 @@
-export default async function Home(){
+async function getStats() {
+  return [];
+}
 
-const grains=await getStats();
+export default async function Home() {
 
-const avg=(k:string)=>
+  const grains = await getStats();
 
-Math.round(
-grains.reduce(
-(a:any,b:any)=>
-a+b[k],0
-)
-/Math.max(
-grains.length,1
-)
-);
+  const avg = (k: string) => {
 
-return(
+    if (grains.length === 0) return 0;
 
-<main className="p-10">
+    return Math.round(
+      grains.reduce(
+        (a: any, b: any) =>
+          a + (b[k] || 0),
+        0
+      ) / grains.length
+    );
 
-<h1 className="text-4xl">
+  };
 
-☕ MoreGrains
+  return (
 
-</h1>
+    <main className="p-10">
 
-<p>
+      <h1 className="text-4xl mb-6">
+        ☕ MoreGrains
+      </h1>
 
-Зёрен собрано:
-{grains.length}
+      <p>
+        Зёрен собрано: {grains.length}
+      </p>
 
-</p>
+      <div className="mt-8 space-y-4">
 
-<div className="mt-8">
+        <div>
+          🧠 Экспертность: {avg("expertise")}%
+        </div>
 
-🧠 Экспертность:
-{avg("expertise")}%
+        <div>
+          ❤️ Близость: {avg("relationships")}%
+        </div>
 
-</div>
+        <div>
+          👐 Сила действия: {avg("action_power")}%
+        </div>
 
-<div>
+        <div>
+          🫀 Внутренняя опора: {avg("stability")}%
+        </div>
 
-❤️ Близость:
-{avg("relationships")}%
+      </div>
 
-</div>
+    </main>
 
-<div>
-
-👐 Сила действия:
-{avg("action_power")}%
-
-</div>
-
-<div>
-
-🫀 Внутренняя опора:
-{avg("stability")}%
-
-</div>
-
-</main>
-
-)
+  );
 
 }
