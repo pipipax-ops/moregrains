@@ -12,7 +12,7 @@ export default async function Home() {
 
     return Math.round(
       grains.reduce(
-        (a: any, b: any) =>
+        (a: number, b: any) =>
           a + (b[k] || 0),
         0
       ) / grains.length
@@ -21,7 +21,6 @@ export default async function Home() {
   };
 
   return (
-
     <main className="p-10">
 
       <h1 className="text-4xl mb-6">
@@ -53,7 +52,5 @@ export default async function Home() {
       </div>
 
     </main>
-
   );
-
 }
