@@ -65,22 +65,24 @@ export async function POST(req: Request) {
         .content!
     );
 
-  await supabase
-    .from("grains")
-    .insert({
+  const { count } = await supabase
+  .from("grains")
+  .select("*", {
+    count: "exact",
+    head: true
+  });
 
-      raw_text: msg,
+const { data: lastGrains } = await supabase
+  .from("grains")
+  .select("*")
+  .order(
+    "created_at",
+    { ascending: false }
+  )
+  .limit(5);
 
-      reason_to_value:
-        data.reason_to_value,
-
-      encouragement:
-        data.encouragement,
-
-      advice:
-        data.advice
-
-    });
+const total =
+  lastGrains?.length || 1;
 
   await fetch(
     `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`,
@@ -101,11 +103,29 @@ export async function POST(req: Request) {
 
 `☕ +1 зерно
 
-🌱 ${data.reason_to_value}
+📈 Общая статистика
 
-💬 ${data.encouragement}
+Зёрен собрано:
 
-➡️ ${data.advice}`
+${count ?? 0}
+
+🔥 Последняя серия:
+
+${total}
+
+🌱 Причина ценности:
+
+${data.reason_to_value}
+
+💬 Поддержка:
+
+${data.encouragement}
+
+➡️ Следующий шаг:
+
+${data.advice}
+
+`
 
       })
 
