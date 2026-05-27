@@ -95,9 +95,7 @@ if(
 )
 return 0;
 
-const value=
-
-grains.reduce(
+return grains.reduce(
 
 (
 a:number,
@@ -111,11 +109,6 @@ b[k]||0
 
 0
 
-);
-
-return Math.min(
-5,
-value
 );
 
 };
@@ -180,7 +173,7 @@ return(
 
 <div>
 
-🫙 Амбар
+🫙 Банка
 
 <b>
 
@@ -204,14 +197,15 @@ return(
 
 {total(
 "expertise"
-)}/5
+)}
 
 <br/>
 
 <small>
 
-обучение,
 дегустации,
+обучение,
+контент,
 развитие
 
 </small>
@@ -224,7 +218,7 @@ return(
 
 {total(
 "relationships"
-)}/5
+)}
 
 <br/>
 
@@ -244,15 +238,15 @@ return(
 
 {total(
 "action_power"
-)}/5
+)}
 
 <br/>
 
 <small>
 
-решения,
 спорт,
-создание
+решения,
+действие
 
 </small>
 
@@ -264,7 +258,7 @@ return(
 
 {total(
 "stability"
-)}/5
+)}
 
 <br/>
 
