@@ -14,12 +14,90 @@ export async function POST(req: Request) {
 
   const body = await req.json();
 
-  const msg = body.message?.text;
-  const chatId = body.message?.chat?.id;
+ let msg = body.message?.text;
 
-  if (!msg || !chatId) {
-    return Response.json({ ok: true });
-  }
+const chatId =
+body.message?.chat?.id;
+
+const voice =
+body.message?.voice;
+
+if (voice) {
+
+const fileInfo =
+await fetch(
+
+`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/getFile?file_id=${voice.file_id}`
+
+);
+
+const fileData =
+await fileInfo.json();
+
+const filePath =
+fileData.result.file_path;
+
+const audioUrl =
+
+`https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${filePath}`;
+
+const audioRes =
+await fetch(audioUrl);
+
+const audioBlob =
+await audioRes.blob();
+
+const form =
+new FormData();
+
+form.append(
+"file",
+audioBlob,
+"voice.ogg"
+);
+
+form.append(
+"model",
+"gpt-4o-mini-transcribe"
+);
+
+const transcript =
+await fetch(
+
+"https://api.openai.com/v1/audio/transcriptions",
+
+{
+
+method:"POST",
+
+headers:{
+
+Authorization:
+
+`Bearer ${process.env.OPENAI_API_KEY}`
+
+},
+
+body:form
+
+}
+
+);
+
+const textData =
+await transcript.json();
+
+msg = textData.text;
+
+}
+
+if (!msg || !chatId) {
+
+return Response.json({
+ok:true
+});
+
+}
 
   const completion =
     await openai.chat.completions.create({
@@ -103,29 +181,11 @@ const total =
 
 `☕ +1 зерно
 
-📈 Общая статистика
+🌱 ${data.reason_to_value}
 
-Зёрен собрано:
+💬 ${data.encouragement}
 
-${count ?? 0}
-
-🔥 Последняя серия:
-
-${total}
-
-🌱 Причина ценности:
-
-${data.reason_to_value}
-
-💬 Поддержка:
-
-${data.encouragement}
-
-➡️ Следующий шаг:
-
-${data.advice}
-
-`
+➡️ ${data.advice}`
 
       })
 
