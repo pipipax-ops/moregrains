@@ -14,227 +14,308 @@ export async function POST(req: Request) {
 
   const body = await req.json();
 
- let msg = body.message?.text;
+  let msg = body.message?.text;
 
-const chatId = body.message?.chat?.id;
-const userId =
-body.message?.from?.id?.toString();
+  const chatId =
+    body.message?.chat?.id;
 
-const username =
-body.message?.from?.username
-|| "anonymous";
+  const userId =
+    body.message?.from?.id
+      ?.toString();
 
-const voice =
-body.message?.voice;
+  const username =
+    body.message?.from
+      ?.username
+    || "anonymous";
 
-if (voice) {
+  const voice =
+    body.message?.voice;
 
-const fileInfo =
-await fetch(
+  if (voice) {
+
+    const fileInfo =
+      await fetch(
 
 `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/getFile?file_id=${voice.file_id}`
 
-);
+      );
 
-const fileData =
-await fileInfo.json();
+    const fileData =
+      await fileInfo.json();
 
-const filePath =
-fileData.result.file_path;
+    const filePath =
+      fileData.result
+        .file_path;
 
-const audioUrl =
+    const audioUrl =
 
 `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${filePath}`;
 
-const audioRes =
-await fetch(audioUrl);
+    const audioRes =
+      await fetch(
+        audioUrl
+      );
 
-const audioBlob =
-await audioRes.blob();
+    const audioBlob =
+      await audioRes.blob();
 
-const form =
-new FormData();
+    const form =
+      new FormData();
 
-form.append(
-"file",
-audioBlob,
-"voice.ogg"
-);
+    form.append(
+      "file",
+      audioBlob,
+      "voice.ogg"
+    );
 
-form.append(
-"model",
-"gpt-4o-mini-transcribe"
-);
+    form.append(
+      "model",
+      "gpt-4o-mini-transcribe"
+    );
 
-const transcript =
-await fetch(
+    const transcript =
+      await fetch(
 
 "https://api.openai.com/v1/audio/transcriptions",
 
-{
+        {
 
-method:"POST",
+          method: "POST",
 
-headers:{
+          headers: {
 
-Authorization:
+            Authorization:
 
 `Bearer ${process.env.OPENAI_API_KEY}`
 
-},
+          },
 
-body:form
+          body: form
 
-}
+        }
 
-);
+      );
 
-const textData =
-await transcript.json();
+    const textData =
+      await transcript
+        .json();
 
-msg = textData.text;
+    msg = textData.text;
 
-}
+  }
 
-if (!msg || !chatId) {
+  if (
+    !msg ||
+    !chatId
+  ) {
 
-return Response.json({
-ok:true
-});
+    return Response.json({
+      ok: true
+    });
 
-}
+  }
 
   const completion =
-    await openai.chat.completions.create({
+    await openai
+      .chat
+      .completions
+      .create({
 
-      model: "gpt-4.1-mini",
+        model:
+          "gpt-4.1-mini",
 
-      response_format: {
-        type: "json_object"
-      },
+        response_format: {
+          type:
+            "json_object"
+        },
 
-      messages: [
+        messages: [
 
-        {
-          role: "system",
+          {
 
-          content: `
+            role:
+              "system",
+
+            content: `
 
 Верни JSON:
 
 {
- "reason_to_value":"",
- "encouragement":"",
- "advice":""
+
+"reason_to_value":"",
+
+"encouragement":"",
+
+"advice":"",
+
+"expertise":0,
+
+"relationships":0,
+
+"action_power":0,
+
+"stability":0,
+
+"bucket":""
+
 }
 
+Правила:
+
+expertise:
+
+обучение,
+работа,
+знания,
+выступления
+
+relationships:
+
+любовь,
+семья,
+друзья
+
+action_power:
+
+действия,
+спорт,
+решения
+
+stability:
+
+осознанность,
+спокойствие
+
+bucket:
+
+главная область роста
+
 `
-        },
 
-        {
-          role: "user",
-          content: msg
-        }
+          },
 
-      ]
+          {
 
-    });
+            role:
+              "user",
+
+            content:
+              msg
+
+          }
+
+        ]
+
+      });
 
   const data =
     JSON.parse(
+
       completion
         .choices[0]
         .message
         .content!
+
     );
 
   await supabase
-.from("grains")
-.insert({
 
-user_id:userId,
+    .from(
+      "grains"
+    )
 
-username:username,
+    .insert({
 
-raw_text:msg,
+      user_id:
+        userId,
 
-reason_to_value:
-data.reason_to_value,
+      username:
+        username,
 
-encouragement:
-data.encouragement,
+      raw_text:
+        msg,
 
-advice:
-data.advice
+      reason_to_value:
+        data
+          .reason_to_value,
 
-});
+      encouragement:
+        data
+          .encouragement,
 
-const { count } =
-await supabase
+      advice:
+        data
+          .advice,
 
-.from("grains")
+      expertise:
+        data
+          .expertise,
 
-.select("*",{
+      relationships:
+        data
+          .relationships,
 
-count:"exact",
-head:true
+      action_power:
+        data
+          .action_power,
 
-})
+      stability:
+        data
+          .stability,
 
-.eq(
-"user_id",
-userId
-);
+      bucket:
+        data
+          .bucket
 
-const { data: lastGrains } = await supabase
-  .from("grains")
-  .select("*")
-  .order(
-    "created_at",
-    { ascending: false }
-  )
-  .limit(5);
+    });
 
-const total =
-  lastGrains?.length || 1;
-  await supabase
-.from("grains")
-.insert({
+  const { count } =
 
-user_id:userId,
+    await supabase
 
-username:username,
+      .from(
+        "grains"
+      )
 
-raw_text:msg,
+      .select(
+        "*",
+        {
+          count:
+            "exact",
 
-reason_to_value:
-data.reason_to_value,
+          head:
+            true
+        }
+      )
 
-encouragement:
-data.encouragement,
-
-advice:
-data.advice
-
-});
+      .eq(
+        "user_id",
+        userId
+      );
 
   await fetch(
-    `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`,
+
+`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`,
+
     {
 
-      method: "POST",
+      method:
+        "POST",
 
       headers: {
+
         "Content-Type":
           "application/json"
+
       },
 
-      body: JSON.stringify({
+      body:
+        JSON.stringify({
 
-        chat_id: chatId,
+          chat_id:
+            chatId,
 
-        text:
-
+          text:
 
 `☕ +1 зерно
 
@@ -242,33 +323,44 @@ data.advice
 
 📈 Твои результаты
 
-Зёрен собрано:
+Зёрен:
+
 ${count ?? 0}
 
-🎤 Распознано:
+🗂 Копилка:
 
-${msg}
+${data.bucket}
 
-🌱 Ценность:
+🧠 +${data.expertise}
+
+❤️ +${data.relationships}
+
+👐 +${data.action_power}
+
+🫀 +${data.stability}
+
+🌱
 
 ${data.reason_to_value}
 
-💬 Поддержка:
+💬
 
 ${data.encouragement}
 
-➡️ Следующий шаг:
+➡️
 
 ${data.advice}
 
-📊 Полная история:
+📊 История:
 
 https://moregrains.vercel.app?user=${userId}
+
 `
 
-      })
+        })
 
     }
+
   );
 
   return Response.json({
