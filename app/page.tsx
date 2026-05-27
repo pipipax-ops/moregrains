@@ -1,8 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+process.env.NEXT_PUBLIC_SUPABASE_URL!,
+process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
 function bucketName(
@@ -31,7 +31,8 @@ searchParams,
 
 }:{
 
-searchParams:Promise<{
+searchParams:
+Promise<{
 user?:string;
 }>;
 
@@ -51,16 +52,14 @@ supabase
 .select(
 "*",
 {
-count:
-"exact"
+count:"exact"
 }
 )
 
 .order(
 "created_at",
 {
-ascending:
-false
+ascending:false
 }
 );
 
@@ -84,11 +83,7 @@ count
 
 }=await query;
 
-const total=(
-
-k:string
-
-)=>{
+const total=(k:string)=>{
 
 if(
 !grains?.length
@@ -139,13 +134,13 @@ return(
 
 <main className=
 
-"p-8 max-w-4xl mx-auto"
+"max-w-4xl mx-auto p-8"
 
 >
 
 <h1 className=
 
-"text-4xl mb-8"
+"text-5xl mb-8"
 
 >
 
@@ -155,13 +150,17 @@ return(
 
 <div className=
 
-"mb-10 space-y-3"
+"border rounded-xl p-5 mb-8"
 
 >
 
-<div>
+<div className=
 
-☕ Чашка
+"text-lg"
+
+>
+
+☕ <i>Чашка</i>
 
 <b>
 
@@ -169,17 +168,15 @@ return(
 
 </b>
 
-</div>
+·
 
-<div>
+🫙 <b>
 
-🫙 Банка
-
-<b>
-
-{count || 0}
+Банка
 
 </b>
+
+{count||0}
 
 </div>
 
@@ -187,112 +184,111 @@ return(
 
 <div className=
 
-"space-y-6 mb-10"
+"grid gap-4 mb-8"
 
 >
 
 <div>
 
-🧠 Мастерство
+🧠 <b>
 
-<b>
+Мастерство
+
+</b>
+
+—
 
 {total(
 "expertise"
 )}
 
-</b>
-
-<br/>
+</div>
 
 <small>
 
-обучение,
-работа,
-контент,
-выступления
+обучение ·
+контент ·
+создание
 
 </small>
 
-</div>
-
 <div>
 
-❤️ Связи
+❤️ <b>
 
-<b>
+Связи
+
+</b>
+
+—
 
 {total(
 "relationships"
 )}
 
-</b>
-
-<br/>
+</div>
 
 <small>
 
-семья,
-друзья,
-близость
+любовь ·
+семья ·
+друзья
 
 </small>
 
-</div>
-
 <div>
 
-👐 Движение
+👐 <b>
 
-<b>
+Движение
+
+</b>
+
+—
 
 {total(
 "action_power"
 )}
 
-</b>
-
-<br/>
+</div>
 
 <small>
 
-спорт,
-создание,
+спорт ·
+действие ·
 решения
 
 </small>
 
-</div>
-
 <div>
 
-🫀 Опора
+🫀 <b>
 
-<b>
+Опора
+
+</b>
+
+—
 
 {total(
 "stability"
 )}
 
-</b>
-
-<br/>
+</div>
 
 <small>
 
-сон,
-рефлексия,
-устойчивость
+рефлексия ·
+сон ·
+спокойствие
 
 </small>
 
 </div>
 
-</div>
-
 <div className=
 
-"space-y-5"
+"space-y-4"
 
 >
 
@@ -314,11 +310,13 @@ className=
 
 >
 
-<div>
+<div className=
 
-🗓
+"text-sm opacity-70"
 
-{
+>
+
+🗓 {
 
 new Date(
 g.created_at
@@ -336,7 +334,7 @@ g.created_at
 
 >
 
-🫙
+🫙 <b>
 
 {
 
@@ -346,17 +344,21 @@ g.bucket
 
 }
 
+</b>
+
 </div>
 
 <div className=
 
-"mt-4"
+"mt-4 italic"
 
 >
 
-◌
+{
 
-{g.reason_to_value}
+g.reason_to_value
+
+}
 
 </div>
 
@@ -366,13 +368,15 @@ g.advice && (
 
 <div className=
 
-"mt-2 text-sm opacity-80"
+"mt-2 underline"
 
 >
 
-→
+→ {
 
-{g.advice}
+g.advice
+
+}
 
 </div>
 
@@ -382,17 +386,39 @@ g.advice && (
 
 <div className=
 
-"mt-4 text-sm"
+"mt-4"
 
 >
 
-🧠 +{g.expertise}
+🧠 {
 
-❤️ +{g.relationships}
+g.expertise
 
-👐 +{g.action_power}
+}
 
-🫀 +{g.stability}
+·
+
+❤️ {
+
+g.relationships
+
+}
+
+·
+
+👐 {
+
+g.action_power
+
+}
+
+·
+
+🫀 {
+
+g.stability
+
+}
 
 </div>
 
