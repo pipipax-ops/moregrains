@@ -16,20 +16,25 @@ export default async function Home({
   const params =
     await searchParams;
 
-  let query =
-    supabase
+  let query = supabase
 
-      .from("grains")
+    .from("grains")
 
-      .select("*")
+    .select(
+      "*",
+      {
+        count:
+          "exact"
+      }
+    )
 
-      .order(
-        "created_at",
-        {
-          ascending:
-            false
-        }
-      );
+    .order(
+      "created_at",
+      {
+        ascending:
+          false
+      }
+    );
 
   if (
     params.user
@@ -44,10 +49,11 @@ export default async function Home({
   }
 
   const {
-    data: grains
+    data: grains,
+    count
   } = await query;
 
-  const avg = (
+  const total = (
     k: string
   ) => {
 
@@ -55,25 +61,20 @@ export default async function Home({
       !grains?.length
     ) return 0;
 
-    return Math.round(
+    return grains.reduce(
 
-      grains.reduce(
+      (
+        a:number,
+        b:any
+      ) =>
+
+        a +
 
         (
-          a: number,
-          b: any
-        ) =>
+          b[k] || 0
+        ),
 
-          a +
-          (
-            b[k] || 0
-          ),
-
-        0
-
-      ) /
-
-      grains.length
+      0
 
     );
 
@@ -93,25 +94,26 @@ export default async function Home({
 
 Зёрен собрано:
 
-{grains?.length || 0}
+{count || 0}
 
 </p>
 
-<div className="space-y-3 mb-10">
+<div className="space-y-4 mb-10">
 
 <div>
 
 🧠 Экспертность:
 
-{avg(
+{total(
 "expertise"
-)}%
+)}
 
 <br/>
 
 <small>
 
 Рост через знания,
+дегустации,
 обучение,
 работу,
 выступления
@@ -124,17 +126,18 @@ export default async function Home({
 
 ❤️ Близость:
 
-{avg(
+{total(
 "relationships"
-)}%
+)}
 
 <br/>
 
 <small>
 
 Любовь,
-дружба,
-семья
+семья,
+отношения,
+друзья
 
 </small>
 
@@ -144,9 +147,9 @@ export default async function Home({
 
 👐 Сила действия:
 
-{avg(
+{total(
 "action_power"
-)}%
+)}
 
 <br/>
 
@@ -154,7 +157,8 @@ export default async function Home({
 
 Решения,
 спорт,
-движение
+движение,
+инициатива
 
 </small>
 
@@ -164,15 +168,16 @@ export default async function Home({
 
 🫀 Внутренняя опора:
 
-{avg(
+{total(
 "stability"
-)}%
+)}
 
 <br/>
 
 <small>
 
 Осознанность,
+спокойствие,
 устойчивость
 
 </small>
@@ -186,14 +191,18 @@ export default async function Home({
 {
 
 grains?.map(
+
 (
 g:any
 )=>(
 
 <div
+
 key={g.id}
+
 className=
 "border rounded p-4"
+
 >
 
 <div>
