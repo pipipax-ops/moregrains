@@ -1,122 +1,232 @@
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+process.env
+.NEXT_PUBLIC_SUPABASE_URL!,
+
+process.env
+.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
 );
 
+function bucketName(
+bucket:string
+){
+
+if(
+bucket==="expertise"
+)
+return "Мастерство";
+
+if(
+bucket==="relationships"
+)
+return "Связи";
+
+if(
+bucket==="action_power"
+)
+return "Движение";
+
+if(
+bucket==="stability"
+)
+return "Опора";
+
+return "Жизнь";
+
+}
+
 export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{
-    user?: string;
-  }>;
-}) {
 
-  const params =
-    await searchParams;
+searchParams,
 
-  let query = supabase
+}:{
 
-    .from("grains")
+searchParams:Promise<{
+user?:string;
+}>;
 
-    .select(
-      "*",
-      {
-        count:
-          "exact"
-      }
-    )
+}){
 
-    .order(
-      "created_at",
-      {
-        ascending:
-          false
-      }
-    );
+const params=
+await searchParams;
 
-  if (
-    params.user
-  ) {
+let query=
+supabase
 
-    query =
-      query.eq(
-        "user_id",
-        params.user
-      );
+.from(
+"grains"
+)
 
-  }
+.select(
+"*",
+{
+count:
+"exact"
+}
+)
 
-  const {
-    data: grains,
-    count
-  } = await query;
+.order(
+"created_at",
+{
+ascending:
+false
+}
+);
 
-  const total = (
-    k: string
-  ) => {
+if(
+params.user
+){
 
-    if (
-      !grains?.length
-    ) return 0;
+query=
+query.eq(
+"user_id",
+params.user
+);
 
-    return grains.reduce(
+}
 
-      (
-        a:number,
-        b:any
-      ) =>
+const {
 
-        a +
+data:grains,
 
-        (
-          b[k] || 0
-        ),
+count
 
-      0
+}=await query;
 
-    );
+const total=(
 
-  };
+k:string
 
-  return (
+)=>{
 
-<main className="p-10 max-w-4xl mx-auto">
+if(
+!grains?.length
+)
+return 0;
 
-<h1 className="text-4xl mb-6">
+const value=
+
+grains.reduce(
+
+(
+a:number,
+b:any
+)=>
+
+a+
+
+(
+b[k]||0
+),
+
+0
+
+);
+
+return Math.min(
+5,
+value
+);
+
+};
+
+const today=
+new Date()
+.toDateString();
+
+const todayCount=
+
+grains?.filter(
+
+(g:any)=>
+
+new Date(
+g.created_at
+)
+
+.toDateString()
+
+===today
+
+)
+
+.length || 0;
+
+return(
+
+<main className=
+
+"p-10 max-w-4xl mx-auto"
+
+>
+
+<h1 className=
+
+"text-4xl mb-8"
+
+>
 
 ☕ MoreGrains
 
 </h1>
 
-<p className="mb-8">
+<div className=
 
-Зёрен собрано:
+"mb-10 space-y-2"
 
-{count || 0}
-
-</p>
-
-<div className="space-y-4 mb-10">
+>
 
 <div>
 
-🧠 Экспертность:
+◌ Чаша дня
+
+<b>
+
+{todayCount}
+
+</b>
+
+</div>
+
+<div>
+
+🫙 Всего зёрен
+
+<b>
+
+{count || 0}
+
+</b>
+
+</div>
+
+</div>
+
+<div className=
+
+"space-y-5 mb-10"
+
+>
+
+<div>
+
+🧠 Мастерство
 
 {total(
 "expertise"
-)}
+)}/5
 
 <br/>
 
 <small>
 
-Рост через знания,
 дегустации,
 обучение,
-работу,
-выступления
+работа,
+развитие
 
 </small>
 
@@ -124,19 +234,18 @@ export default async function Home({
 
 <div>
 
-❤️ Близость:
+❤️ Связи
 
 {total(
 "relationships"
-)}
+)}/5
 
 <br/>
 
 <small>
 
-Любовь,
+любовь,
 семья,
-отношения,
 друзья
 
 </small>
@@ -145,20 +254,19 @@ export default async function Home({
 
 <div>
 
-👐 Сила действия:
+👐 Движение
 
 {total(
 "action_power"
-)}
+)}/5
 
 <br/>
 
 <small>
 
-Решения,
 спорт,
-движение,
-инициатива
+решения,
+действие
 
 </small>
 
@@ -166,18 +274,18 @@ export default async function Home({
 
 <div>
 
-🫀 Внутренняя опора:
+🫀 Опора
 
 {total(
 "stability"
-)}
+)}/5
 
 <br/>
 
 <small>
 
-Осознанность,
 спокойствие,
+осознанность,
 устойчивость
 
 </small>
@@ -186,7 +294,11 @@ export default async function Home({
 
 </div>
 
-<div className="space-y-4">
+<div className=
+
+"space-y-4"
+
+>
 
 {
 
@@ -201,6 +313,7 @@ g:any
 key={g.id}
 
 className=
+
 "border rounded p-4"
 
 >
@@ -223,13 +336,23 @@ g.created_at
 
 <div>
 
-☕ Копилка:
+🫙
 
-{g.bucket}
+{
+
+bucketName(
+g.bucket
+)
+
+}
 
 </div>
 
-<div>
+<div className=
+
+"mt-2"
+
+>
 
 🌱
 
@@ -237,9 +360,11 @@ g.created_at
 
 </div>
 
-<div>
+<div className=
 
-📈 Вклад:
+"mt-2 text-sm"
+
+>
 
 🧠 +{g.expertise}
 
