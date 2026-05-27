@@ -148,7 +148,28 @@ ok:true
         .content!
     );
 
-  const { count } =
+  await supabase
+.from("grains")
+.insert({
+
+user_id:userId,
+
+username:username,
+
+raw_text:msg,
+
+reason_to_value:
+data.reason_to_value,
+
+encouragement:
+data.encouragement,
+
+advice:
+data.advice
+
+});
+
+const { count } =
 await supabase
 
 .from("grains")
@@ -214,22 +235,36 @@ data.advice
 
         text:
 
+
 `☕ +1 зерно
 
 👤 ${username}
 
-📈 Твои зёрна:
+📈 Твои результаты
+
+Зёрен собрано:
 ${count ?? 0}
 
 🎤 Распознано:
 
 ${msg}
 
-🌱 ${data.reason_to_value}
+🌱 Ценность:
 
-💬 ${data.encouragement}
+${data.reason_to_value}
 
-➡️ ${data.advice}`
+💬 Поддержка:
+
+${data.encouragement}
+
+➡️ Следующий шаг:
+
+${data.advice}
+
+📊 Полная история:
+
+https://moregrains.vercel.app?user=${userId}
+`
 
       })
 
