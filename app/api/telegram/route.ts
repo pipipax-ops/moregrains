@@ -161,47 +161,65 @@ content:`
 
 "advice":"",
 
-"expertise":0,
-
-"relationships":0,
-
-"action_power":0,
-
-"stability":0,
-
 "bucket":""
 
 }
 
-Обычно событие влияет на 1 банк.
+Выбери ТОЛЬКО ОДНУ главную банку.
 
-Иногда на 2.
+Никогда не выбирай несколько.
 
-Максимум сумма всех баллов = 5.
+🧠 expertise
 
-Пример:
+работа,
+обучение,
+создание,
+контент,
+выступления
 
-"Обновил сайт"
+❤️ relationships
 
-expertise=3
+семья,
+любовь,
+друзья,
+отношения
 
-action_power=2
+👐 action_power
 
-relationships=0
+спорт,
+действие,
+инициатива,
+решение
 
-stability=0
+🫀 stability
+
+рефлексия,
+смысл,
+сон,
+осознанность,
+спокойствие
+
+Примеры:
+
+"Сделал бота"
+
+bucket=expertise
+
+"Задался смыслом жизни"
+
+bucket=stability
+
+"Пошёл тренироваться"
+
+bucket=action_power
 
 reason_to_value:
 
-1 наблюдение
-
-до 12 слов
+до 10 слов
 
 advice:
 
-1 шаг дальше
-
-до 8 слов
+до 6 слов
 
 `
 
@@ -229,49 +247,30 @@ completion
 
 );
 
-const expertise=
-Math.max(
-0,
-Math.min(
-5,
-Number(
-data.expertise
-)||0
-)
-);
+let expertise=0;
+let relationships=0;
+let action_power=0;
+let stability=0;
 
-const relationships=
-Math.max(
-0,
-Math.min(
-5,
-Number(
-data.relationships
-)||0
+if(
+data.bucket==="expertise"
 )
-);
+expertise=1;
 
-const action_power=
-Math.max(
-0,
-Math.min(
-5,
-Number(
-data.action_power
-)||0
+if(
+data.bucket==="relationships"
 )
-);
+relationships=1;
 
-const stability=
-Math.max(
-0,
-Math.min(
-5,
-Number(
-data.stability
-)||0
+if(
+data.bucket==="action_power"
 )
-);
+action_power=1;
+
+if(
+data.bucket==="stability"
+)
+stability=1;
 
 await supabase
 
@@ -383,41 +382,28 @@ JSON.stringify({
 chat_id:
 chatId,
 
+parse_mode:
+"Markdown",
+
 text:
 
-`☕ +1 зерно
+`☕ +1 зерно · ☕ ${todayCount} · 🫙 ${count ?? 0}
 
-☕ Сегодня
+_Главная банка_
 
-${todayCount}
-
-🫙 Банка
-
-${count ?? 0}
-
-⌁ Главная банка
-
-${bucketName(
+*${bucketName(
 data.bucket
-)}
+)}*
 
-🧠 +${expertise}
+🧠 ${expertise} · ❤️ ${relationships} · 👐 ${action_power} · 🫀 ${stability}
 
-❤️ +${relationships}
-
-👐 +${action_power}
-
-🫀 +${stability}
-
-— — —
+———
 
 ${data.reason_to_value}
 
 → ${data.advice}
 
-⌁ Путь
-
-https://moregrains.vercel.app?user=${userId}
+⌁ https://moregrains.vercel.app?user=${userId}
 
 `
 
