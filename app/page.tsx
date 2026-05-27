@@ -1,40 +1,27 @@
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
-
-process.env
-.NEXT_PUBLIC_SUPABASE_URL!,
-
-process.env
-.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
 function bucketName(
 bucket:string
 ){
 
-if(
-bucket==="expertise"
-)
+if(bucket==="expertise")
 return "Мастерство";
 
-if(
-bucket==="relationships"
-)
+if(bucket==="relationships")
 return "Связи";
 
-if(
-bucket==="action_power"
-)
+if(bucket==="action_power")
 return "Движение";
 
-if(
-bucket==="stability"
-)
+if(bucket==="stability")
 return "Опора";
 
-return "Жизнь";
+return "Путь";
 
 }
 
@@ -54,6 +41,7 @@ const params=
 await searchParams;
 
 let query=
+
 supabase
 
 .from(
@@ -117,7 +105,6 @@ b:any
 )=>
 
 a+
-
 (
 b[k]||0
 ),
@@ -159,7 +146,7 @@ return(
 
 <main className=
 
-"p-10 max-w-4xl mx-auto"
+"p-8 max-w-4xl mx-auto"
 
 >
 
@@ -181,7 +168,7 @@ return(
 
 <div>
 
-◌ Чаша дня
+☕ Сегодня
 
 <b>
 
@@ -193,7 +180,7 @@ return(
 
 <div>
 
-🫙 Всего зёрен
+🫙 Амбар
 
 <b>
 
@@ -207,7 +194,7 @@ return(
 
 <div className=
 
-"space-y-5 mb-10"
+"space-y-6 mb-10"
 
 >
 
@@ -223,9 +210,8 @@ return(
 
 <small>
 
-дегустации,
 обучение,
-работа,
+дегустации,
 развитие
 
 </small>
@@ -244,9 +230,9 @@ return(
 
 <small>
 
-любовь,
 семья,
-друзья
+друзья,
+близость
 
 </small>
 
@@ -264,9 +250,9 @@ return(
 
 <small>
 
-спорт,
 решения,
-действие
+спорт,
+создание
 
 </small>
 
@@ -285,7 +271,7 @@ return(
 <small>
 
 спокойствие,
-осознанность,
+сон,
 устойчивость
 
 </small>
@@ -296,7 +282,7 @@ return(
 
 <div className=
 
-"space-y-4"
+"space-y-5"
 
 >
 
@@ -314,7 +300,7 @@ key={g.id}
 
 className=
 
-"border rounded p-4"
+"border rounded-xl p-5"
 
 >
 
@@ -334,7 +320,11 @@ g.created_at
 
 </div>
 
-<div>
+<div className=
+
+"mt-2"
+
+>
 
 🫙
 
@@ -350,19 +340,39 @@ g.bucket
 
 <div className=
 
-"mt-2"
+"mt-4"
 
 >
 
-🌱
+◌
 
 {g.reason_to_value}
 
 </div>
 
+{
+
+g.advice && (
+
 <div className=
 
-"mt-2 text-sm"
+"mt-2 text-sm opacity-80"
+
+>
+
+→
+
+{g.advice}
+
+</div>
+
+)
+
+}
+
+<div className=
+
+"mt-4 text-sm"
 
 >
 
