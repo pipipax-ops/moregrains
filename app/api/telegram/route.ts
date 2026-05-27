@@ -10,141 +10,154 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export async function POST(req: Request) {
+function bucketName(
+bucket:string
+){
 
-  const body = await req.json();
+if(bucket==="expertise")
+return "Мастерство";
 
-  let msg = body.message?.text;
+if(bucket==="relationships")
+return "Связи";
 
-  const chatId =
-    body.message?.chat?.id;
+if(bucket==="action_power")
+return "Движение";
 
-  const userId =
-    body.message?.from?.id
-      ?.toString();
+if(bucket==="stability")
+return "Опора";
 
-  const username =
-    body.message?.from
-      ?.username
-    || "anonymous";
+return "Путь";
 
-  const voice =
-    body.message?.voice;
+}
 
-  if (voice) {
+export async function POST(
+req:Request
+){
 
-    const fileInfo =
-      await fetch(
+const body=
+await req.json();
+
+let msg=
+body.message?.text;
+
+const chatId=
+body.message?.chat?.id;
+
+const userId=
+body.message?.from?.id
+?.toString();
+
+const voice=
+body.message?.voice;
+
+if(voice){
+
+const fileInfo=
+await fetch(
 
 `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/getFile?file_id=${voice.file_id}`
 
-      );
+);
 
-    const fileData =
-      await fileInfo.json();
+const fileData=
+await fileInfo.json();
 
-    const filePath =
-      fileData.result
-        .file_path;
+const filePath=
+fileData.result.file_path;
 
-    const audioUrl =
+const audioUrl=
 
 `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${filePath}`;
 
-    const audioRes =
-      await fetch(
-        audioUrl
-      );
+const audioRes=
+await fetch(
+audioUrl
+);
 
-    const audioBlob =
-      await audioRes.blob();
+const audioBlob=
+await audioRes.blob();
 
-    const form =
-      new FormData();
+const form=
+new FormData();
 
-    form.append(
-      "file",
-      audioBlob,
-      "voice.ogg"
-    );
+form.append(
+"file",
+audioBlob,
+"voice.ogg"
+);
 
-    form.append(
-      "model",
-      "gpt-4o-mini-transcribe"
-    );
+form.append(
+"model",
+"gpt-4o-mini-transcribe"
+);
 
-    const transcript =
-      await fetch(
+const transcript=
+await fetch(
 
 "https://api.openai.com/v1/audio/transcriptions",
 
-        {
+{
 
-          method: "POST",
+method:"POST",
 
-          headers: {
+headers:{
 
-            Authorization:
+Authorization:
 
 `Bearer ${process.env.OPENAI_API_KEY}`
 
-          },
+},
 
-          body: form
+body:form
 
-        }
+}
 
-      );
+);
 
-    const textData =
-      await transcript
-        .json();
+const textData=
+await transcript.json();
 
-    msg = textData.text;
+msg=
+textData.text;
 
-  }
+}
 
-  if (
-    !msg ||
-    !chatId
-  ) {
+if(
+!msg||
+!chatId
+){
 
-    return Response.json({
-      ok: true
-    });
+return Response.json({
+ok:true
+});
 
-  }
+}
 
-  const completion =
-    await openai
-      .chat
-      .completions
-      .create({
+const completion=
+await openai.chat
+.completions.create({
 
-        model:
-          "gpt-4.1-mini",
+model:
+"gpt-4.1-mini",
 
-        response_format: {
-          type:
-            "json_object"
-        },
+response_format:{
+type:
+"json_object"
+},
 
-        messages: [
+messages:[
 
-          {
+{
 
-            role:
-              "system",
+role:"system",
 
-            content: `
+content:`
 
 Верни JSON:
 
 {
 
 "reason_to_value":"",
-
-"encouragement":"",
 
 "advice":"",
 
@@ -160,211 +173,262 @@ export async function POST(req: Request) {
 
 }
 
-Правила:
+Обычно событие влияет на 1 банк.
 
-expertise:
+Иногда на 2.
 
-обучение,
-работа,
-знания,
-выступления
+Максимум сумма всех баллов = 5.
 
-relationships:
+Пример:
 
-любовь,
-семья,
-друзья
+"Обновил сайт"
 
-action_power:
+expertise=3
 
-действия,
-спорт,
-решения
+action_power=2
 
-stability:
+relationships=0
 
-осознанность,
-спокойствие
+stability=0
 
-bucket:
+reason_to_value:
 
-главная область роста
+1 наблюдение
+
+до 12 слов
+
+advice:
+
+1 шаг дальше
+
+до 8 слов
 
 `
 
-          },
+},
 
-          {
+{
 
-            role:
-              "user",
+role:"user",
 
-            content:
-              msg
+content:msg
 
-          }
+}
 
-        ]
+]
 
-      });
+});
 
-  const data =
-    JSON.parse(
+const data=
+JSON.parse(
 
-      completion
-        .choices[0]
-        .message
-        .content!
+completion
+.choices[0]
+.message
+.content!
 
-    );
+);
 
-  await supabase
+const expertise=
+Math.max(
+0,
+Math.min(
+5,
+Number(
+data.expertise
+)||0
+)
+);
 
-    .from(
-      "grains"
-    )
+const relationships=
+Math.max(
+0,
+Math.min(
+5,
+Number(
+data.relationships
+)||0
+)
+);
 
-    .insert({
+const action_power=
+Math.max(
+0,
+Math.min(
+5,
+Number(
+data.action_power
+)||0
+)
+);
 
-      user_id:
-        userId,
+const stability=
+Math.max(
+0,
+Math.min(
+5,
+Number(
+data.stability
+)||0
+)
+);
 
-      username:
-        username,
+await supabase
 
-      raw_text:
-        msg,
+.from(
+"grains"
+)
 
-      reason_to_value:
-        data
-          .reason_to_value,
+.insert({
 
-      encouragement:
-        data
-          .encouragement,
+user_id:userId,
 
-      advice:
-        data
-          .advice,
+raw_text:msg,
 
-      expertise:
-        data
-          .expertise,
+reason_to_value:
+data.reason_to_value,
 
-      relationships:
-        data
-          .relationships,
+advice:
+data.advice,
 
-      action_power:
-        data
-          .action_power,
+bucket:
+data.bucket,
 
-      stability:
-        data
-          .stability,
+expertise,
 
-      bucket:
-        data
-          .bucket
+relationships,
 
-    });
+action_power,
 
-  const { count } =
+stability
 
-    await supabase
+});
 
-      .from(
-        "grains"
-      )
+const {
+count
+}=await supabase
 
-      .select(
-        "*",
-        {
-          count:
-            "exact",
+.from(
+"grains"
+)
 
-          head:
-            true
-        }
-      )
+.select(
+"id",
+{
+count:"exact",
+head:true
+}
+)
 
-      .eq(
-        "user_id",
-        userId
-      );
+.eq(
+"user_id",
+userId
+);
 
-  await fetch(
+const today=
+new Date()
+.toDateString();
+
+const {
+data:todayGrains
+}=await supabase
+
+.from(
+"grains"
+)
+
+.select(
+"created_at"
+)
+
+.eq(
+"user_id",
+userId
+);
+
+const todayCount=
+
+todayGrains?.filter(
+
+(g:any)=>
+
+new Date(
+g.created_at
+)
+
+.toDateString()
+
+===today
+
+)
+
+.length || 0;
+
+await fetch(
 
 `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`,
 
-    {
+{
 
-      method:
-        "POST",
+method:"POST",
 
-      headers: {
+headers:{
+"Content-Type":
+"application/json"
+},
 
-        "Content-Type":
-          "application/json"
+body:
+JSON.stringify({
 
-      },
+chat_id:
+chatId,
 
-      body:
-        JSON.stringify({
-
-          chat_id:
-            chatId,
-
-          text:
+text:
 
 `☕ +1 зерно
 
-👤 ${username}
+☕ Сегодня
 
-📈 Твои результаты
+${todayCount}
 
-Зёрен:
+🫙 Банка
 
 ${count ?? 0}
 
-🗂 Копилка:
+⌁ Главная банка
 
-${data.bucket}
+${bucketName(
+data.bucket
+)}
 
-🧠 +${data.expertise}
+🧠 +${expertise}
 
-❤️ +${data.relationships}
+❤️ +${relationships}
 
-👐 +${data.action_power}
+👐 +${action_power}
 
-🫀 +${data.stability}
+🫀 +${stability}
 
-🌱
+— — —
 
 ${data.reason_to_value}
 
-💬
+→ ${data.advice}
 
-${data.encouragement}
-
-➡️
-
-${data.advice}
-
-📊 История:
+⌁ Путь
 
 https://moregrains.vercel.app?user=${userId}
 
 `
 
-        })
+})
 
-    }
+}
 
-  );
+);
 
-  return Response.json({
-    ok: true
-  });
+return Response.json({
+ok:true
+});
 
 }
