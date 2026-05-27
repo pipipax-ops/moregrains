@@ -13,24 +13,33 @@ export default async function Home({
   }>;
 }) {
 
-  const params = await searchParams;
+  const params =
+    await searchParams;
 
-  let query = supabase
-    .from("grains")
-    .select("*")
-    .order(
-      "created_at",
-      {
-        ascending: false
-      }
-    );
+  let query =
+    supabase
 
-  if (params.user) {
+      .from("grains")
 
-    query = query.eq(
-      "user_id",
-      params.user
-    );
+      .select("*")
+
+      .order(
+        "created_at",
+        {
+          ascending:
+            false
+        }
+      );
+
+  if (
+    params.user
+  ) {
+
+    query =
+      query.eq(
+        "user_id",
+        params.user
+      );
 
   }
 
@@ -38,10 +47,13 @@ export default async function Home({
     data: grains
   } = await query;
 
-  const avg = (k: string) => {
+  const avg = (
+    k: string
+  ) => {
 
-    if (!grains?.length)
-      return 0;
+    if (
+      !grains?.length
+    ) return 0;
 
     return Math.round(
 
@@ -52,13 +64,16 @@ export default async function Home({
           b: any
         ) =>
 
-          a + (
+          a +
+          (
             b[k] || 0
           ),
 
         0
 
-      ) / grains.length
+      ) /
+
+      grains.length
 
     );
 
@@ -66,101 +81,179 @@ export default async function Home({
 
   return (
 
-    <main className="p-10">
+<main className="p-10 max-w-4xl mx-auto">
 
-      <h1 className="text-4xl mb-6">
+<h1 className="text-4xl mb-6">
 
-        ☕ MoreGrains
+☕ MoreGrains
 
-      </h1>
+</h1>
 
-      <p>
+<p className="mb-8">
 
-        Зёрен собрано:
+Зёрен собрано:
 
-        {grains?.length || 0}
+{grains?.length || 0}
 
-      </p>
+</p>
 
-      <div className="mt-8 space-y-4">
+<div className="space-y-3 mb-10">
 
-        <div>
-          🧠 Экспертность:
-          {avg(
-            "expertise"
-          )}%
-        </div>
+<div>
 
-        <div>
-          ❤️ Близость:
-          {avg(
-            "relationships"
-          )}%
-        </div>
+🧠 Экспертность:
 
-        <div>
-          👐 Сила действия:
-          {avg(
-            "action_power"
-          )}%
-        </div>
+{avg(
+"expertise"
+)}%
 
-        <div>
-          🫀 Внутренняя опора:
-          {avg(
-            "stability"
-          )}%
-        </div>
+<br/>
 
-      </div>
+<small>
 
-      <div className="mt-10">
+Рост через знания,
+обучение,
+работу,
+выступления
 
-        {
+</small>
 
-          grains?.map(
-            (g: any) => (
+</div>
 
-              <div
-                key={g.id}
-                className="border p-4 mb-4 rounded"
-              >
+<div>
 
-                <div>
+❤️ Близость:
 
-                  🌱
+{avg(
+"relationships"
+)}%
 
-                  {g.reason_to_value}
+<br/>
 
-                </div>
+<small>
 
-                <div>
+Любовь,
+дружба,
+семья
 
-                  💬
+</small>
 
-                  {g.encouragement}
+</div>
 
-                </div>
+<div>
 
-                <div>
+👐 Сила действия:
 
-                  ➡️
+{avg(
+"action_power"
+)}%
 
-                  {g.advice}
+<br/>
 
-                </div>
+<small>
 
-              </div>
+Решения,
+спорт,
+движение
 
-            )
-          )
+</small>
 
-        }
+</div>
 
-      </div>
+<div>
 
-    </main>
+🫀 Внутренняя опора:
 
-  );
+{avg(
+"stability"
+)}%
+
+<br/>
+
+<small>
+
+Осознанность,
+устойчивость
+
+</small>
+
+</div>
+
+</div>
+
+<div className="space-y-4">
+
+{
+
+grains?.map(
+(
+g:any
+)=>(
+
+<div
+key={g.id}
+className=
+"border rounded p-4"
+>
+
+<div>
+
+🗓
+
+{
+
+new Date(
+g.created_at
+)
+
+.toLocaleString()
+
+}
+
+</div>
+
+<div>
+
+☕ Копилка:
+
+{g.bucket}
+
+</div>
+
+<div>
+
+🌱
+
+{g.reason_to_value}
+
+</div>
+
+<div>
+
+📈 Вклад:
+
+🧠 +{g.expertise}
+
+❤️ +{g.relationships}
+
+👐 +{g.action_power}
+
+🫀 +{g.stability}
+
+</div>
+
+</div>
+
+)
+
+)
+
+}
+
+</div>
+
+</main>
+
+);
 
 }
