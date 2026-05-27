@@ -16,8 +16,13 @@ export async function POST(req: Request) {
 
  let msg = body.message?.text;
 
-const chatId =
-body.message?.chat?.id;
+const chatId = body.message?.chat?.id;
+const userId =
+body.message?.from?.id?.toString();
+
+const username =
+body.message?.from?.username
+|| "anonymous";
 
 const voice =
 body.message?.voice;
@@ -143,12 +148,22 @@ ok:true
         .content!
     );
 
-  const { count } = await supabase
-  .from("grains")
-  .select("*", {
-    count: "exact",
-    head: true
-  });
+  const { count } =
+await supabase
+
+.from("grains")
+
+.select("*",{
+
+count:"exact",
+head:true
+
+})
+
+.eq(
+"user_id",
+userId
+);
 
 const { data: lastGrains } = await supabase
   .from("grains")
@@ -161,6 +176,26 @@ const { data: lastGrains } = await supabase
 
 const total =
   lastGrains?.length || 1;
+  await supabase
+.from("grains")
+.insert({
+
+user_id:userId,
+
+username:username,
+
+raw_text:msg,
+
+reason_to_value:
+data.reason_to_value,
+
+encouragement:
+data.encouragement,
+
+advice:
+data.advice
+
+});
 
   await fetch(
     `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`,
@@ -180,6 +215,15 @@ const total =
         text:
 
 `☕ +1 зерно
+
+👤 ${username}
+
+📈 Твои зёрна:
+${count ?? 0}
+
+🎤 Распознано:
+
+${msg}
 
 🌱 ${data.reason_to_value}
 
